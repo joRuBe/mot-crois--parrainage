@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mot croisé pour Elora (Parrainage ISA BTP)</title>
+  <style>
+    :root{--accent:#e63946;--bg:#f7f9fc}
+    body{font-family:Inter, system-ui, Arial; background:var(--bg); color:#0b1220; margin:0; padding:24px}
+    .card{max-width:980px;margin:18px auto;background:white;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(10,10,20,0.06)}
+    h1{margin:0 0 8px;font-size:22px}
+    p.lead{margin:0 0 18px;color:#556}
+    .grid{display:grid;grid-template-columns:repeat(15,40px);gap:6px;justify-content:center;margin:18px 0}
+    .cell{width:40px;height:40px;border:2px solid #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;background:white}
+    .cell input{width:100%;height:100%;border:0;text-align:center;font-weight:700;font-size:16px;text-transform:uppercase}
+    .vertical-cell{border-color:var(--accent);box-shadow:0 0 0 3px rgba(230,57,70,0.06)}
+    .vertical-input{color:var(--accent);font-weight:900}
+    .black{background:#222;border-color:#222}
+    .clues{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
+    .clue-box{flex:1;min-width:220px}
+    .clue-box h3{margin:6px 0 8px;font-size:14px}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    button{background:var(--accent);color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    #solutionReveal{font-weight:800;color:var(--accent);margin-left:8px}
+    .success{background:linear-gradient(90deg, rgba(52,211,153,0.12), rgba(16,185,129,0.06)); padding:10px;border-radius:8px;color:#065f46;margin-top:12px}
+    @media print{body{background:white} .controls, header{display:none}} 
+    .note{font-size:13px;color:#556;margin-top:10px}
+    .hidden-answer{display:none;margin-top:5px;color:#444;font-style:italic}
+    .show-answer{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Mot croisé pour Elora — Parrainage ISA BTP</h1>
+      <p class="lead">Complète les mots à partir des indices. Les cases en <span style="color:var(--accent);font-weight:800">rouge</span> forment le mot final . Quand ces lettres sont correctement remplies, un message apparaîtra.</p>
+    </header>
+
+    <div style="text-align:center">
+      <div class="grid" id="grid" aria-hidden="false"></div>
+    </div>
+
+    <div class="clues">
+      <div class="clue-box">
+        <h3>1️⃣ </h3>
+        <p><strong>Indice n°1 :</strong> Le lien symbolique entre un étudiant et un autre étudiant de promo inférieur à l’ISA BTP.</p>
+        <span class="show-answer" onclick="toggleAnswer(this)">Afficher la réponse</span>
+        <p class="hidden-answer"><em>PARRAINAGE</em></p>
+      </div>
+      <div class="clue-box">
+        <h3>2️⃣ </h3>
+        <p><strong>Indice n°2 :</strong>Ton nom de famille</p>
+        <span class="show-answer" onclick="toggleAnswer(this)">Afficher la réponse</span>
+        <p class="hidden-answer"><em>RODRIGUES</em></p>
+      </div>
+      <div class="clue-box">
+        <h3>3️⃣ </h3>
+        <p><strong>Indice n°3:</strong> Ce qui t’aide à deviner ou à comprendre une énigme.</p>
+        <span class="show-answer" onclick="toggleAnswer(this)">Afficher la réponse</span>
+        <p class="hidden-answer"><em>INDICE</em></p>
+      </div>
+      <div class="clue-box">
+        <h3>4️⃣ </h3>
+        <p><strong>Indice n°4 :</strong> La matière la plus redoutée à l’ISA. </p>
+        <span class="show-answer" onclick="toggleAnswer(this)">Afficher la réponse</span>
+        <p class="hidden-answer"><em>MATHS</em></p>
+      </div>
+      <div class="clue-box">
+        <h3>5️⃣ </h3>
+        <p><strong>Indice n°5 :</strong> Tu en pratiques, le tiens c'est le Basketball.</p>
+        <span class="show-answer" onclick="toggleAnswer(this)">Afficher la réponse</span>
+        <p class="hidden-answer"><em>SPORT</em></p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="check">Vérifier</button>
+      <button id="reveal" class="ghost">Afficher la solution</button>
+      <div id="solutionReveal"></div>
+    </div>
+  </div>
+
+  <script>
+    const Vcol = 4;
+    const numCols = 15;
+    const rows = [
+      {answer: 'PARRAINAGE', start: 4},
+      {answer: 'RODRIGUES', start: 1},
+      {answer: 'INDICE', start: 1},
+      {answer: 'MATHS', start: 4},
+      {answer: 'SPORT', start: 2}
+    ];
+    const targetVertical = 'PRIMO';
+
+    const grid = document.getElementById('grid');
+
+    rows.forEach((r, rowIdx)=>{
+      for(let c=0;c<numCols;c++){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const inWord = (c >= r.start && c < r.start + r.answer.length);
+        if(inWord){
+          const posInWord = c - r.start;
+          const input = document.createElement('input');
+          input.maxLength = 1;
+          input.dataset.row = rowIdx;
+          input.dataset.pos = posInWord;
+          input.dataset.col = c;
+          input.autocapitalize = 'characters';
+          input.addEventListener('input', onInput);
+          input.addEventListener('keydown', onKeyDown);
+          if(c === Vcol){
+            cell.classList.add('vertical-cell');
+            input.classList.add('vertical-input');
+          }
+          cell.appendChild(input);
+        } else {
+          cell.classList.add('black');
+        }
+        grid.appendChild(cell);
+      }
+    });
+
+    function normalizeWord(s){
+      return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z]/g,'').toUpperCase();
+    }
+
+    function getInput(row,pos){
+      return document.querySelector('input[data-row="'+row+'"][data-pos="'+pos+'"]');
+    }
+
+    function onInput(e){
+      e.target.value = e.target.value.toUpperCase();
+      const row = parseInt(e.target.dataset.row);
+      const pos = parseInt(e.target.dataset.pos);
+      const next = getInput(row,pos+1);
+      if(e.target.value && next) next.focus();
+      updateVerticalDisplay();
+    }
+
+    function onKeyDown(e){
+      if(e.key === 'Backspace' && !e.target.value){
+        const row = parseInt(e.target.dataset.row);
+        const pos = parseInt(e.target.dataset.pos);
+        const prev = getInput(row,pos-1);
+        if(prev) prev.focus();
+      }
+    }
+
+    function updateVerticalDisplay(){
+      const letters = [];
+      for(let i=0;i<rows.length;i++){
+        const posInWord = Vcol - rows[i].start;
+        let ch = '';
+        if(posInWord >=0 && posInWord < rows[i].answer.length){
+          const inp = getInput(i,posInWord);
+          ch = (inp && inp.value) ? inp.value.toUpperCase() : '';
+        }
+        letters.push(ch || '');
+      }
+      const got = normalizeWord(letters.join(''));
+      const targetNorm = normalizeWord(targetVertical);
+      const sol = document.getElementById('solutionReveal');
+      if(got === targetNorm){
+        sol.innerHTML = '<div class="success">✅ Mot final détecté : <strong>'+targetVertical+'</strong><br><br>Maintenant traduis ce mot en français ! 🇫🇷</div>';
+      } else {
+        sol.textContent = '';
+      }
+    }
+
+    document.getElementById('check').addEventListener('click', ()=>{
+      let allCorrect = true;
+      rows.forEach((r, idx)=>{
+        const letters = [];
+        for(let p=0;p<r.answer.length;p++){
+          const inp = getInput(idx,p);
+          letters.push((inp && inp.value) ? inp.value : '');
+        }
+        const typed = normalizeWord(letters.join(''));
+        const expected = normalizeWord(r.answer);
+        if(typed !== expected) allCorrect = false;
+      });
+      const sol = document.getElementById('solutionReveal');
+      if(allCorrect){
+        sol.innerHTML = '<div class="success">Bravo — tous les mots sont corrects !<br>Le mot final vertical est <strong>'+targetVertical+'</strong> — maintenant traduis-le en français.</div>';
+      } else {
+        sol.textContent = 'Il manque des lettres ou il y a des erreurs. Essaie encore !';
+      }
+    });
+
+    document.getElementById('reveal').addEventListener('click', ()=>{
+      rows.forEach((r, idx)=>{
+        const letters = r.answer.split('');
+        letters.forEach((l,p)=>{
+          const inp = getInput(idx,p);
+          if(inp) inp.value = l.toUpperCase();
+        });
+      });
+      updateVerticalDisplay();
+    });
+
+    function toggleAnswer(el){
+      const ans = el.nextElementSibling;
+      if(ans.style.display === 'none' || ans.style.display === ''){
+        ans.style.display = 'block';
+        el.textContent = 'Masquer la réponse';
+      } else {
+        ans.style.display = 'none';
+        el.textContent = 'Afficher la réponse';
+      }
+    }
+
+    updateVerticalDisplay();
+  </script>
+</body>
+</html>
